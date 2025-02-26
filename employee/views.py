@@ -1,5 +1,5 @@
 from django.shortcuts import render,HttpResponse
-from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics
 from .models import employee_model
@@ -10,6 +10,11 @@ from django.contrib.auth.models import User
 from .serializers import RegisterSerializer , LoginSerializer , UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 # Create your views here.
+class DetailsViews(APIView):
+    def get(self, rewuest):
+        data = User.objects.all()
+        details_serializer = UserSerializer(data , many = True)
+        return Response(details_serializer.data)
 
 class RegisterView(generics.CreateAPIView):
 
@@ -29,10 +34,16 @@ class LoginView(generics.CreateAPIView):
         if user is not None:
             refresh = RefreshToken.for_user(user)
             user_serializer = UserSerializer(user)
+            data = User.objects.all()
+            details_serializer = UserSerializer(data , many = True)
+            
             return Response({
                 'refresh' : str(refresh),
                 'access': str(refresh.access_token),
-                'user':user_serializer.data
+                # 'user':user_serializer.data,
+                'user':details_serializer.data,
             })
         else:
             return Response({'detail': 'invalid credentials'})
+        
+
